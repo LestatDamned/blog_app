@@ -1,4 +1,5 @@
 {% load mptt_tags static %}
+{% load static %}
 <div class="nested-comments">
 {% recursetree post.comments.all %}
 <ul id="comment-thread-{{ node.pk }}">
@@ -19,12 +20,18 @@
                     <hr/>
                     <time>{{ node.time_create }}</time>
                 </div>
+                <div class="rating-buttons">
+                    <button class="btn btn-sm btn-primary" data-comment-id="{{ node.pk }}" data-value="1">Лайк</button>
+                    <button class="btn btn-sm btn-secondary" data-comment-id="{{ node.pk }}" data-value="-1">Дизлайк
+                    </button>
+                    <button class="btn btn-sm btn-secondary rating-sum">{{ comment.get_sum_rating }}</button>
+                </div>
             </div>
         </div>
     </li>
-      {% if not node.is_leaf_node %}
+        {% if not node.is_leaf_node %}
         {{ children }}
-      {% endif %}
+        {% endif %}
 </ul>
 {% endrecursetree %}
 </div>
@@ -32,19 +39,19 @@
 {% if request.user.is_authenticated %}
     <div class="card border-0">
         <div class="card-body">
-          <h6 class="card-title">
-              Форма добавления комментария
-          </h6>
-          <form method="post" id="commentForm" name="commentForm" data-post-id="{{ post.pk }}">
-              {{ form }}
-              <div class="d-grid gap-2 d-md-block mt-2">
-                <button type="submit" class="btn btn-dark" id="commentSubmit">Добавить комментарий</button>
-              </div>
-          </form>
+            <h6 class="card-title">
+                Форма добавления комментария
+            </h6>
+            <form method="post" id="commentForm" name="commentForm" data-post-id="{{ post.pk }}">
+                {{ form }}
+                <div class="d-grid gap-2 d-md-block mt-2">
+                    <button type="submit" class="btn btn-dark" id="commentSubmit">Добавить комментарий</button>
+                </div>
+            </form>
         </div>
     </div>
 {% endif %}
-
+<script src="{% static 'ratingscomments.js' %}"></script>
 {% block script %}
 <script src="{% static '/comments.js' %}"></script>
 {% endblock %}

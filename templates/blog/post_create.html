@@ -1,20 +1,30 @@
-{% extends 'main.html' %}
+{% extends "main.html" %}
 
 {% block content %}
-<div class="card mb-3 border-0 nth-shadow">
-    <div class="card-body">
-        <div class="card-title nth-card-title">
-            <h4>Добавление статьи</h4>
-        </div>
-        <form method="post" action="{% url 'post_create' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.media }}
-            {{ form.as_p }}
-            {{category_form.as_p}}
-            <div class="d-grid gap-2 d-md-block mt-2">
-                <button type="submit" class="btn btn-dark">Добавить статью</button>
-            </div>
-        </form>
+  <h2>Create a New Post</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Отображение формы поста -->
+    <div>
+      <h3>Post Form:</h3>
+      {{ post_form.as_p }}
     </div>
-</div>
+
+    <!-- Отображение формы категории с использованием FormSet -->
+    <div>
+      <h3>Create a New Category:</h3>
+      {{ category_formset.management_form }}  <!-- Очень важно для FormSet -->
+      {% for form in category_formset %}
+        <div>
+          {{ form.as_p }}
+        </div>
+      {% endfor %}
+      {% if error %}
+        <p class="text-danger">{{ error }}</p>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 {% endblock %}

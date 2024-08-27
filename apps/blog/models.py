@@ -23,7 +23,7 @@ class Post(models.Model):
   title = models.CharField(verbose_name='Название записи', max_length=255)
   slug = models.SlugField(verbose_name='URL',max_length=255,blank=True)
   description = models.CharField(verbose_name='Краткое описание',max_length=500)
-  text = RichTextField(verbose_name='Полный текст записи',max_length=500,config_name='awesome_ckeditor')
+  text = RichTextField(verbose_name='Полный текст записи',max_length=1000,config_name='awesome_ckeditor')
   thumbnail = models.ImageField(default='default.jpg',verbose_name='Изображение записи',blank=True,upload_to='images/thumbnails/%Y/%m/%d/',validators=[FileExtensionValidator(allowed_extensions=('png','jpg','webp','gif','jpeg'))])
   status = models.CharField(choices=STATUS_OPTIONS,default='published',verbose_name='Статус записи',max_length=10)
   create = models.DateTimeField(auto_now_add=True,verbose_name='Время добавления')
@@ -52,7 +52,7 @@ class Post(models.Model):
       return reverse("post_detail", kwargs={"slug": self.slug})
   
   def save(self,*args, **kwargs):
-    self.slug = unique_slugify(self,self.title,self.slug)
+    self.slug = unique_slugify(self,self.title)
     super().save(*args, **kwargs)
 
 
@@ -64,7 +64,7 @@ class Category(MPTTModel):
   '''Модель категории с вложенностью'''
   title = models.CharField(max_length=255,verbose_name='Название категории')
   slug = models.SlugField(max_length=255, verbose_name='URL категории',blank=True)
-  description = models.TextField(verbose_name='Описание категории',max_length=300)
+  description = models.TextField(verbose_name='Описание категории',max_length=300,blank=True)
   parent = TreeForeignKey('self',on_delete=models.CASCADE,null=True,
                           blank=True,db_index=True,related_name='children',
                           verbose_name='Родительская категория')
@@ -87,7 +87,7 @@ class Category(MPTTModel):
     return reverse('post_by_category',kwargs={'slug':self.slug})
   
   def save(self,*args, **kwargs):
-    self.slug = unique_slugify(self,self.title,self.slug)
+    self.slug = unique_slugify(self,self.title)
     super().save(*args, **kwargs)
 
 
@@ -120,6 +120,9 @@ class Comment(MPTTModel):
   
   def __str__(self):
     return f'{self.author}:{self.content}'
+
+  def get_sum_rating(self):
+    return sum([rating.value for rating in self.commentsratings.all()])
   
 
 
@@ -141,3 +144,21 @@ class Rating(models.Model):
   def __str__(self):
     return self.post.title
   
+
+class RatingComment(models.Model):
+  '''Модель рейтинга для комментариев: Лайк - Дизлайк'''
+  comment = models.ForeignKey(to=Comment,verbose_name='Комментарий',on_delete=models.CASCADE,related_name='commentsratings')
+  user = models.ForeignKey(to=User,verbose_name='Пользователь',on_delete=models.CASCADE,blank=True,null=True)
+  value = models.IntegerField(verbose_name='Значение',choices=[(1,'Нравится'),(2,'Не нравится')])
+  time_create = models.DateTimeField(verbose_name='Время добавления',auto_now_add=True)
+  ip_address = models.GenericIPAddressField(verbose_name='IP Адрес')
+
+  class Meta:
+    unique_together = ('comment','ip_address')
+    ordering = ['-time_create']
+    indexes = [models.Index(fields=['-time_create','value'])]
+    verbose_name = 'Рейтинг комментария'
+    verbose_name_plural = 'Рейтинг комментариев'
+
+  def __str__(self):
+    return self.comment.title

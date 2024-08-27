@@ -5,6 +5,14 @@
         <div class="card-body">
             <div class="card-title nth-card-title">
                 <h4>Авторизация на сайте</h4>
+                <a href="{%url 'social:begin' 'github' %}">
+                  Log In with GitHub
+                </a>
+                <br>
+                <a href="{% url 'social:begin' 'google-oauth2' %}">
+                  Log In with Google
+                </a>
+
             </div>
             <form method="post" action="{% url 'login' %}">
                 {% csrf_token %}

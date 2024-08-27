@@ -9,7 +9,7 @@ class PostCreateForm(forms.ModelForm):
 
   class Meta:
     model = Post
-    fields = ['title','description','text','thumbnail','status']
+    fields = ['title','description','category','text','thumbnail','status']
 
   def __init__(self,*args, **kwargs):
     '''Обновление стилей формы под Bootstrap'''
@@ -19,7 +19,8 @@ class PostCreateForm(forms.ModelForm):
         'class':'form-control',
         'autocomplete':'off'
       })
-      
+    self.fields['category'].required = False
+
 
 class PostUpdateForm(PostCreateForm):
   '''Форма обновления статьи на сайте'''
@@ -48,6 +49,8 @@ class CommentCreateForm(forms.ModelForm):
 
 class CategoryCreateForm(forms.ModelForm):
   '''Форма добавление категорий к статье'''
+  title = forms.CharField(required=False)
+  description = forms.CharField(required=False, widget=forms.Textarea)  
   class Meta:
     model = Category
     fields = ['title','description','parent']

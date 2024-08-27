@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,14 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = str(os.getenv('SECRET_KEY'))
+SECRET_KEY = str(os.getenv("SECRET_KEY"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = str(os.getenv('DJANGO_ALLOWED_HOSTS')).split(' ')
+ALLOWED_HOSTS = str(os.getenv("DJANGO_ALLOWED_HOSTS")).split(" ")
 
-INTERNAL_IPS = str(os.getenv('INTERNAL_IPS')).split(' ')
+INTERNAL_IPS = str(os.getenv("INTERNAL_IPS")).split(" ")
 
 # Application definition
 
@@ -41,7 +42,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
     "apps.blog.apps.BlogConfig",
     "mptt",
     "django_mptt_admin",
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django_recaptcha",
     "ckeditor_uploader",
     "ckeditor",
+    "social_django",
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -91,12 +94,12 @@ WSGI_APPLICATION = "blog_cbv.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": str(os.getenv('SQL_ENGINE')),
-        "NAME": str(os.getenv('SQL_DATABASE')),
-        'USER': str(os.getenv('SQL_USER')),
-        'PASSWORD': str(os.getenv('SQL_PASSWORD')),
-        'HOST': str(os.getenv('SQL_HOST')),
-        'PORT': str(os.getenv('SQL_PORT')),
+        "ENGINE": str(os.getenv("SQL_ENGINE")),
+        "NAME": str(os.getenv("SQL_DATABASE")),
+        "USER": str(os.getenv("SQL_USER")),
+        "PASSWORD": str(os.getenv("SQL_PASSWORD")),
+        "HOST": str(os.getenv("SQL_HOST")),
+        "PORT": str(os.getenv("SQL_PORT")),
     }
 }
 
@@ -155,8 +158,8 @@ MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-RECAPTCHA_PUBLIC_KEY = str(os.getenv('RECAPTCHA_PUBLIC_KEY'))
-RECAPTCHA_PRIVATE_KEY = str(os.getenv('RECAPTCHA_PRIVATE_KEY'))
+RECAPTCHA_PUBLIC_KEY = str(os.getenv("RECAPTCHA_PUBLIC_KEY"))
+RECAPTCHA_PRIVATE_KEY = str(os.getenv("RECAPTCHA_PRIVATE_KEY"))
 
 CACHES = {
     "default": {
@@ -164,3 +167,17 @@ CACHES = {
         "LOCATION": (BASE_DIR / "cache"),
     }
 }
+
+AUTHENTICATION_BACKENDS = (
+    "social_core.backends.github.GithubOAuth2",
+    "social_core.backends.google.GoogleOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+)
+
+SOCIAL_AUTH_GITHUB_KEY = str(os.getenv("SOCIAL_AUTH_GITHUB_KEY"))
+SOCIAL_AUTH_GITHUB_SECRET = str(os.getenv("SOCIAL_AUTH_GITHUB_SECRET"))
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = str(os.getenv("GOOGLE_KEY"))
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv("GOOGLE_SECRET"))
+
+LOGIN_REDIRECT_URL = '/'

@@ -1,20 +1,23 @@
 from typing import Any
-from django.db.models.query import QuerySet
-from django.forms import BaseModelForm
-from django.http.response import HttpResponseRedirect
 from django.shortcuts import render,redirect
-from .models import Post, Category,Comment,Rating
 from django.views.generic import ListView, DetailView, CreateView,UpdateView,View
-from .forms import PostCreateForm,PostUpdateForm,CommentCreateForm, CategoryCreateForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from ..services.mixins import AuthorRequiredMixin
 from django.http import HttpResponse, JsonResponse
 from taggit.models import Tag
 from django.urls import reverse_lazy
+from django.views.generic.edit import FormView
+from django.forms import formset_factory
+
+from .forms import PostCreateForm,PostUpdateForm,CommentCreateForm, CategoryCreateForm
+from .models import Post, Category,Comment,Rating, RatingComment
+from ..services.mixins import AuthorRequiredMixin
+
 
 
 class PostListView(ListView):
+  '''Представление: список постов'''
+
   model = Post
   template_name = 'blog/post_list.html'
   context_object_name = 'posts'
@@ -25,6 +28,8 @@ class PostListView(ListView):
 
   
 class PostDetailView(DetailView):
+  '''Представление: поста'''
+
   model = Post
   template_name = 'blog/post_detail.html'
   context_object_name = 'post'
@@ -37,6 +42,8 @@ class PostDetailView(DetailView):
   
 
 class PostFromCategory(ListView):
+  '''Представление: постов по категории'''
+
   template_name = 'blog/post_list.html'
   context_object_name = 'posts'
   category = None
@@ -56,45 +63,57 @@ class PostFromCategory(ListView):
     return context
   
 
-class PostCreateView(LoginRequiredMixin,CreateView):
-  '''Представление: создание материалов на сайте'''
 
-  model = Post
+CategoryFormSet = formset_factory(CategoryCreateForm, extra=1, can_delete=False)
+
+
+class PostCreateView(FormView):
+  '''Представление: поста на сайте'''
+
   template_name = 'blog/post_create.html'
   form_class = PostCreateForm
-  second_form_class = CategoryCreateForm
-  login_url = 'home'
-  extra_context = {'title':'Добавление статьи на сайт'}
 
-  def get_context_data(self,**kwargs):
-    context = super().get_context_data(**kwargs)
-    if 'category_form' not in context:
-      context['category_form'] = self.second_form_class()
-    return context
-  
-  def post(self,request,*args, **kwargs):
-    self.object = None
-    post_form = self.get_form(self.get_form_class())
-    category_form = self.second_form_class(request.POST)
-    if post_form.is_valid() and category_form.is_valid():
-      return self.form_valid(post_form,category_form)
-    else:
-      return self.form_invalid(post_form,category_form)
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context['post_form'] = self.get_form()
+      context['category_formset'] = CategoryFormSet()
+      return context
 
-  def form_valid(self,post_form,category_form):
-    category = category_form.save()
-    post_form.instance.author = self.request.user
-    post = post_form.save(commit=False)
-    post.category = category
-    post.save()
-    return super().form_valid(post_form)
-  
-  def get_success_url(self) -> str:
-    return reverse_lazy('post_detail',kwargs={'slug':self.object.slug})
-  
+  def post(self, request, *args, **kwargs):
+      post_form = self.form_class(request.POST, request.FILES)
+      category_formset = CategoryFormSet(request.POST)
+      print("POST Data:", request.POST)
+      print("POST Files:", request.FILES)
+      print("Post Form Errors:", post_form.errors)
+      print("Category Form Errors:", category_formset.errors)
+
+      if post_form.is_valid():
+          post_cleaned_data = post_form.cleaned_data
+          print("Post Form Cleaned Data:", post_form.cleaned_data)
+          selected_category = post_cleaned_data['category']
+
+          if not selected_category:
+              if category_formset.is_valid():
+                category_form = category_formset.forms[0]
+                new_category = category_form.save()
+                post_form.instance.category = new_category
+              else:
+                return self.render_to_response(self.get_context_data(
+                    post_form=post_form,
+                    category_formset=category_formset,
+                    error='Вы должны выбрать категорию или создать новую'
+                ))
+
+          post_form.save()
+          return redirect(reverse_lazy('home'))
+
+      return self.render_to_response(self.get_context_data(
+          post_form=post_form,
+          category_formset=category_formset
+      ))
 
 class PostUpdateView(AuthorRequiredMixin,SuccessMessageMixin,UpdateView):
-  '''Представление: обновления материала на сайте'''
+  '''Представление: обновление постов на сайте'''
 
   model = Post
   template_name = 'blog/post_update.html'
@@ -114,7 +133,7 @@ class PostUpdateView(AuthorRequiredMixin,SuccessMessageMixin,UpdateView):
   
 
 class CommentCreateView(LoginRequiredMixin,CreateView):
-  '''Представление: для создания деревотивных комментарий'''
+  '''Представление: для создания деревотивных комментариев'''
 
   form_class = CommentCreateForm
 
@@ -173,31 +192,31 @@ class PostByTagListView(ListView):
   
 
 class RatingCreateView(View):
-    '''Представление: рейтинг поста'''
-    model = Rating
+  '''Представление: рейтинг поста'''
+  model = Rating
 
-    def post(self,request,*args, **kwargs):
-      post_id = request.POST.get('post_id')
-      value = int(request.POST.get('value'))
-      x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-      ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
-      user = request.user if request.user.is_authenticated else None
-      rating,created = self.model.objects.get_or_create(
-        post_id = post_id,
-        ip_address = ip,
-        defaults = {'value':value,'user':user},
-      )
-      if not created:
-        if rating.value == value:
-          rating.delete()
-          return JsonResponse({'status':'deleted','rating_sum': rating.post.get_sum_rating()})
-        else:
-          rating.value = value
-          rating.user = user
-          rating.save()
-          return JsonResponse({'status':'updated','rating_sum':rating.post.get_sum_rating()})
-      return JsonResponse({'status':'created','rating_sum':rating.post.get_sum_rating()})
-    
+  def post(self,request,*args, **kwargs):
+    post_id = request.POST.get('post_id')
+    value = int(request.POST.get('value'))
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+    user = request.user if request.user.is_authenticated else None
+    rating,created = self.model.objects.get_or_create(
+      post_id = post_id,
+      ip_address = ip,
+      defaults = {'value':value,'user':user},
+    )
+    if not created:
+      if rating.value == value:
+        rating.delete()
+        return JsonResponse({'status':'deleted','rating_sum': rating.post.get_sum_rating()})
+      else:
+        rating.value = value
+        rating.user = user
+        rating.save()
+        return JsonResponse({'status':'updated','rating_sum':rating.post.get_sum_rating()})
+    return JsonResponse({'status':'created','rating_sum':rating.post.get_sum_rating()})
+  
 
 def tr_handler404(request,exception):
   '''Представление: обработка ошибки 404'''
@@ -223,3 +242,29 @@ def tr_handler403(request, exception):
         'title': 'Ошибка доступа: 403',
         'error_message': 'Доступ к этой странице ограничен',
     })
+
+
+class RatingCommentCreateView(View):
+  '''Представление: рейтинг комментария'''
+
+  model = RatingComment
+
+  def post(self,request,*args, **kwargs):
+    comment_id = int(request.POST.get('comment_id'))
+    value = int(request.POST.get('value'))
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+    user = request.user if request.user.is_authenticated else None
+    rating,created = self.model.objects.get_or_create(
+      comment_id=comment_id,
+      ip_address=ip,
+      defaults={'value':value,'user':user},
+    )
+    if not created:
+      if rating.value == value:
+        rating.delete()
+      else:
+        rating.value = value
+        rating.user = user
+        rating.save()
+      return JsonResponse({'rating_sum':rating.comment.get_sum_rating()})

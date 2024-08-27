@@ -75,6 +75,8 @@ class UserLoginView(SuccessMessageMixin,LoginView):
   success_message = 'Добро пожаловать на сайт!'
   extra_context = {'title':'Авторизация на сайте'}
 
+  def get_success_url(self) -> str:
+    return reverse_lazy(self.next_page)
 
 class UserLogoutView(LogoutView):
   '''Выход с сайта'''

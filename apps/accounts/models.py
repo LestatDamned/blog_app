@@ -23,7 +23,7 @@ class Profile(models.Model):
 
   def save(self,*args, **kwargs):
     if not self.slug:
-      self.slug = unique_slugify(self,self.user.username,self.slug)
+      self.slug = unique_slugify(self,self.user.username)
     super().save(*args,**kwargs)
 
   def __str__(self):

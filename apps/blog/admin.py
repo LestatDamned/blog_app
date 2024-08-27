@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Category,Comment,Rating
+from .models import Post, Category,Comment,Rating,RatingComment
 from django_mptt_admin.admin import DjangoMpttAdmin
 
 @admin.register(Post)
@@ -19,6 +19,11 @@ class CommentAdminPage(DjangoMpttAdmin):
 
 
 @admin.register(Rating)
+class RatingAdmin(admin.ModelAdmin):
+  '''Админ-панель модели рейтинга'''
+  pass
+
+@admin.register(RatingComment)
 class RatingAdmin(admin.ModelAdmin):
   '''Админ-панель модели рейтинга'''
   pass
