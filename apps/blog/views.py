@@ -10,7 +10,7 @@ from django.views.generic.edit import FormView
 from django.forms import formset_factory
 
 from .forms import PostCreateForm,PostUpdateForm,CommentCreateForm, CategoryCreateForm
-from .models import Post, Category,Comment,Rating, RatingComment
+from .models import Post, Category,Comment,Rating,RatingComment
 from ..services.mixins import AuthorRequiredMixin
 
 
@@ -72,6 +72,7 @@ class PostCreateView(FormView):
 
   template_name = 'blog/post_create.html'
   form_class = PostCreateForm
+  extra_context = {'title':'Создание поста'}
 
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)

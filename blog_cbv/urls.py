@@ -29,6 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('apps.blog.urls')),
     path('', include('apps.accounts.urls')),
+    path('', include('apps.privatemessages.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     re_path(r'^oauth/',include('social_django.urls',namespace='social')),
 

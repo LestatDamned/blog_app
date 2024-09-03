@@ -1,0 +1,8 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h1>Сообщение от {{ privatemessages.sender }}</h1>
+<p>{{ privatemessages.message }}</p>
+<p><small>Отправлено: {{ privatemessages.date_time }}</small></p>
+<a href="{% url 'messages_inbox' %}">Назад к входящим</a> | <a href="{% url 'messages_send' %}">Отправить сообщение</a>
+{% endblock %}

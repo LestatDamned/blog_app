@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "apps.blog.apps.BlogConfig",
     "mptt",
     "django_mptt_admin",
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     "ckeditor_uploader",
     "ckeditor",
     "social_django",
+    'apps.privatemessages',
 ]
 
 MIDDLEWARE = [

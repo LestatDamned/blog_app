@@ -1,0 +1,25 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h1>Входящие</h1>
+<ul>
+    {% for privatemessage in privatemessages %}
+    <div class="card mb-3">
+      <div class="row">
+          <div class="col-8">
+              <div class="card-body">
+                  <h5 class="card-title">
+                    <a href="{% url 'messages_detail' privatemessage.id %}">{{ privatemessage.title|truncatewords:10 }}</a>
+                  </h5>
+                  <p class="card-text">{{ privatemessage.message|truncatewords:20|safe }}</p>
+                  <a href="{{ privatemessage.sender.profile.get_absolute_url }}">{{ privatemessage.sender }}</a>
+              </div>
+          </div>
+      </div>
+    </div>
+    {% empty %}
+    <li>Нет сообщений</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'messages_send' %}">Отправить сообщение</a>
+{% endblock %}

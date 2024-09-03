@@ -9,11 +9,10 @@
                 <li>
                     <a href="{{ node.get_absolute_url }}">{{ node.title }}</a>
                 </li>
-
                 {% if not node.is_leaf_node %}
                     <ul>
                 {% endif %}
-                      {{ children }}
+                    {{ children }}
                 {% if not node.is_leaf_node %}
                     </ul>
                 {% endif %}

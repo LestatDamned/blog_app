@@ -50,7 +50,17 @@ class CommentCreateForm(forms.ModelForm):
 class CategoryCreateForm(forms.ModelForm):
   '''Форма добавление категорий к статье'''
   title = forms.CharField(required=False)
-  description = forms.CharField(required=False, widget=forms.Textarea)  
+  description = forms.CharField(required=False)  
   class Meta:
     model = Category
     fields = ['title','description','parent']
+
+  def __init__(self,*args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.fields['title'].label = 'Название категории'
+    self.fields['description'].label = 'Описание категории'
+    for field in self.fields:
+      self.fields[field].widget.attrs.update({
+        'class':'form-control',
+        'autocomplete':'off',
+      })

@@ -1,30 +1,64 @@
 {% extends "main.html" %}
 
 {% block content %}
-  <h2>Create a New Post</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.media }}
 
-    <!-- Отображение формы поста -->
-    <div>
-      <h3>Post Form:</h3>
-      {{ post_form.as_p }}
-    </div>
+  {{ form.title.label }}:
+  {{ form.title }}
+  <br>
 
-    <!-- Отображение формы категории с использованием FormSet -->
-    <div>
-      <h3>Create a New Category:</h3>
-      {{ category_formset.management_form }}  <!-- Очень важно для FormSet -->
-      {% for form in category_formset %}
-        <div>
-          {{ form.as_p }}
-        </div>
-      {% endfor %}
-      {% if error %}
-        <p class="text-danger">{{ error }}</p>
-      {% endif %}
-    </div>
+  {{ form.description.label }}:
+  {{ form.description }}
+  <br>
 
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+  <input type="checkbox" id="create_new_category" name="create_new_category"> Создать новую категорию
+  <br>
+
+  <div id="existing_category">
+      {{ form.category.label }}:
+      {{ form.category }}
+  </div>
+  <br>
+
+  <div id="new_category_form" style="display:none;">
+    {{ category_formset.management_form }} 
+    {% for form in category_formset %}
+      <div>
+        {{ form.as_p }}
+      </div>
+    {% endfor %}
+    {% if error %}
+      <p class="text-danger">{{ error }}</p>
+    {% endif %}
+  </div>
+
+  {{ form.text.label }}:
+  {{ form.text }}
+  <br>
+
+  {{ form.thumbnail.label }}:
+  {{ form.thumbnail }}
+  <br>
+
+  {{ form.status.label }}:
+  {{ form.status }}
+  <br>
+  <button type="submit" class="btn btn-primary">Добавить статью</button>
+</form>
+
+<script>
+  document.getElementById('create_new_category').addEventListener('change', function() {
+      var newCategoryForm = document.getElementById('new_category_form');
+      var existingCategory = document.getElementById('existing_category');
+      if (this.checked) {
+          newCategoryForm.style.display = 'block';
+          existingCategory.style.display = 'none';
+      } else {
+          newCategoryForm.style.display = 'none';
+          existingCategory.style.display = 'block';
+      }
+  });
+</script>
 {% endblock %}
