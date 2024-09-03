@@ -1,0 +1,5 @@
+# Исключить JavaScript файлы из анализа языков
+*.js linguist-generated
+
+# Исключить CSS файлы из анализа языков
+*.css linguist-generated
