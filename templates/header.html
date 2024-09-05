@@ -22,7 +22,9 @@
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="{% url "messages_send" %}">Написать сообщение</a></li>
+            <li><a class="dropdown-item" href="{% url "messages_dialogs" %}">Диалоги</a></li>
             <li><a class="dropdown-item" href="{% url "messages_inbox" %}">Входящие сообщения</a></li>
+
             <li><hr class="dropdown-divider"></li>
             <li><form action="{% url 'logout' %}" method="post">{% csrf_token %}
               <a href="#" class="dropdown-item" onclick="parentNode.submit();">Выйти из профиля</a>
@@ -40,10 +42,10 @@
         </li>
         {% endif %}
       </ul>
-      <form class="d-flex" role="search">
+      {% comment %} <form class="d-flex" role="search">
         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Search</button>
-      </form>
+      </form> {% endcomment %}
     </div>
   </div>
 </nav>

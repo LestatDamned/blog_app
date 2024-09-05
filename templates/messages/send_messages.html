@@ -5,7 +5,7 @@
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <a href="{% url 'messages_inbox' %}">Назад к входящим</a> 
+    <button type="submit" class="btn btn-primary">Отправить</button>
+    <a href="{% url 'messages_dialogs' %}">Назад к диалогам</a> 
 </form>
 {% endblock content %}

@@ -246,26 +246,32 @@ def tr_handler403(request, exception):
 
 
 class RatingCommentCreateView(View):
-  '''Представление: рейтинг комментария'''
+  '''Представление для обработки рейтинга комментария'''
 
   model = RatingComment
 
-  def post(self,request,*args, **kwargs):
+  def post(self, request, *args, **kwargs):
     comment_id = int(request.POST.get('comment_id'))
     value = int(request.POST.get('value'))
+    
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+    
     user = request.user if request.user.is_authenticated else None
-    rating,created = self.model.objects.get_or_create(
-      comment_id=comment_id,
-      ip_address=ip,
-      defaults={'value':value,'user':user},
+    
+    rating, created = self.model.objects.get_or_create(
+        comment_id=comment_id,
+        ip_address=ip,
+        defaults={'value': value, 'user': user},
     )
-    if not created:
-      if rating.value == value:
-        rating.delete()
-      else:
-        rating.value = value
-        rating.user = user
-        rating.save()
-      return JsonResponse({'rating_sum':rating.comment.get_sum_rating()})
+    
+    if not created:  
+        if rating.value == value:  
+            rating.delete()
+        else:  
+            rating.value = value
+            rating.user = user
+            rating.save()
+    
+    comment = Comment.objects.get(pk=comment_id)
+    return JsonResponse({'rating_sum': comment.get_sum_rating()})

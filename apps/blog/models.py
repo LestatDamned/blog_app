@@ -149,7 +149,7 @@ class RatingComment(models.Model):
   '''Модель рейтинга для комментариев: Лайк - Дизлайк'''
   comment = models.ForeignKey(to=Comment,verbose_name='Комментарий',on_delete=models.CASCADE,related_name='commentsratings')
   user = models.ForeignKey(to=User,verbose_name='Пользователь',on_delete=models.CASCADE,blank=True,null=True)
-  value = models.IntegerField(verbose_name='Значение',choices=[(1,'Нравится'),(2,'Не нравится')])
+  value = models.IntegerField(verbose_name='Значение',choices=[(1,'Нравится'),(-1,'Не нравится')])
   time_create = models.DateTimeField(verbose_name='Время добавления',auto_now_add=True)
   ip_address = models.GenericIPAddressField(verbose_name='IP Адрес')
 

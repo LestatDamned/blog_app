@@ -1,8 +1,61 @@
 {% extends "main.html" %}
 
 {% block content %}
-<h1>Сообщение от {{ privatemessages.sender }}</h1>
-<p>{{ privatemessages.message }}</p>
-<p><small>Отправлено: {{ privatemessages.date_time }}</small></p>
-<a href="{% url 'messages_inbox' %}">Назад к входящим</a> | <a href="{% url 'messages_send' %}">Отправить сообщение</a>
+<div class="container">
+    <h1 class="my-4">{{ title }}</h1>
+
+    <div class="message-list">
+        {% if privatemessages %}
+            <div class="row">
+                {% for message in privatemessages %}
+                    <div class="col-md-12">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ message.sender.username }}</h5>
+                                <p class="card-text">{{ message.message }}</p>
+                                <p class="card-text">
+                                    <small class="text-muted">{{ message.date_time }}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="alert alert-info">Сообщений нет.</p>
+        {% endif %}
+    </div>
+
+    <div class="pagination mt-4">
+      {% if privatemessages.has_other_pages %}
+      <ul class="pagination">
+          {% if privatemessages.has_previous %}
+              <li class="page-item">
+                  <a class="page-link" href="?page={{ privatemessages.previous_page_number }}">Предыдущая</a>
+              </li>
+          {% endif %}
+  
+          {% for num in privatemessages.paginator.page_range %}
+              <li class="page-item {% if privatemessages.number == num %}active{% endif %}">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+          {% endfor %}
+  
+          {% if privatemessages.has_next %}
+              <li class="page-item">
+                  <a class="page-link" href="?page={{ privatemessages.next_page_number }}">Следующая</a>
+              </li>
+          {% endif %}
+      </ul>
+      {% endif %}
+  </div>
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </form>
+
+    <a href="{% url 'messages_dialogs' %}" class="btn btn-secondary mt-4">Назад к списку диалогов</a>
+</div>
 {% endblock %}

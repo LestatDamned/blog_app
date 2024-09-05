@@ -1,0 +1,54 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h1 class="mb-4">Ваши диалоги</h1>
+
+<div class="list-group">
+    {% for dialog in dialogs %}
+        <a href="{% url 'messages_detail' receiver_id=dialog.receiver_id %}" class="list-group-item list-group-item-action">
+            <h5 class="mb-1">{{ dialog.receiver__username }}</h5>
+            <p class="mb-1">{{ dialog.last_message }}</p>
+            <small>Последнее сообщение: {{ dialog.last_message_date }}</small>
+        </a>
+    {% empty %}
+        <div class="alert alert-info" role="alert">
+            У вас нет диалогов.
+        </div>
+    {% endfor %}
+</div>
+
+<a href="{% url 'messages_send' %}" class="btn btn-primary mt-3">Отправить новое сообщение</a>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% block content %}
+<h1>Мои диалоги</h1>
+
+<ul>
+    {% for user in dialogs %}
+        <li>
+            <a href="{% url 'messages_detail' receiver_id=user.id %}">
+                {{ user.username }}
+            </a>
+        </li>
+    {% empty %}
+        <li>У вас нет диалогов.</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'messages_send' %}">Отправить новое сообщение</a>
+{% endblock %} {% endcomment %}
